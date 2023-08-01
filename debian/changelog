@@ -1,3 +1,17 @@
+strongswan (5.9.5-2) unstable; urgency=medium
+
+  [ Deepin Packages Builder ]
+  * sync: sync obs workflows
+  * chore(CI): Update obs tag build workflow
+    Thanks to deepin-ci-robot
+  * chore(CI): remove old obs workflow file
+    Thanks to deepin-ci-robot
+  * chore(CI): Add OWNERS file for auto review or assign
+    Thanks to deepin-ci-robot
+  * chore: new upstream version 5.9.5
+
+ -- myml <wurongjie@deepin.org>  Tue, 01 Aug 2023 16:25:49 +0800
+
 strongswan (5.9.4-1) unstable; urgency=medium
 
   [ Paride Legovini ]
