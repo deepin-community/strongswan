@@ -2,7 +2,7 @@
 
 PKG = wolfssl
 SRC = https://github.com/wolfSSL/$(PKG).git
-REV = v4.8.0-stable
+REV = v5.0.0-stable
 
 NUM_CPUS := $(shell getconf _NPROCESSORS_ONLN)
 
@@ -19,6 +19,7 @@ CONFIG_OPTS = \
 	--enable-silent-rules \
 	--enable-aesccm \
 	--enable-aesctr \
+	--enable-aescfb \
 	--enable-camellia \
 	--enable-curve25519 \
 	--enable-curve448 \
