@@ -1,3 +1,57 @@
+strongswan (5.9.5-3) unstable; urgency=medium
+
+  * Version bump to 5.9.5dr3
+  * libtpmtss: Establish session with TPM 2.0
+  * Merge branch 'openssl-providers'
+  * openssl: Log loaded providers
+  * openssl: Make fips_mode option work with OpenSSL 3
+  * openssl: Load "legacy" provider in OpenSSL 3 for algorithms like MD4, DES etc.
+  * Merge branch 'libtls-tests'
+  * openssl: Only announce ECDH groups actually supported by OpenSSL
+  * openssl: Add helper to map ECDH groups to curve NIDs
+  * libtls: Shutdown server socket in test teardown function
+  * tls-socket: Handle sending fatal errors better
+  * gcrypt:  Support of AES-CFB encryption
+  * botan: Support of AES-CFB encryption
+  * wolfssl: Support of AES-CFB encryption
+  * openssl: Support of AES-CFB encryption
+  * child-rekey: Uninstall old outbound SA earlier on initiator/winner
+  * github: Run charon-tkm tests
+  * charon-tkm: Make only tests requiring TKM optional
+  * Revert "testing: Don't run tests when building tkm"
+  * Revert "testing: Don't run tests when building tkm-rpc"
+  * android: Improved simplified Chinese translation / 完善了简体中文翻译
+  * vici: Fix check before applying identity to public keys
+  * testing: Increase memory of winnetou
+  * Version bump to 5.9.5dr2
+  * farp: Fix incompatible function types warning
+  * eap-radius: Fix incompatible function types warnings
+  * processor: Fix incompatible function types warnings
+  * blocking-queue: Fix incompatible function types warning
+  * Merge branch 'rsa-oaep-encryption'
+  * testing: Added RSA PKCS1 encryption tests
+  * testing: Added RSA OAEP encryption tests
+  * gcrypt: Support RSA OAEP SHA1 encryption/decryption
+  * gcrypt: Enable RSA PKCS1 encryption/decryption
+  * botan: RSA OAEP labels are not supported
+  * wolfssl: Support OAEP labels
+  * openssl: Implemented RSA OAEP encryption/decryption with optional labels
+  * credentials: Added void *params to public_key encrypt() and private_key decrypt() methods
+  * botan: Fully enable RSA OAEP decryption
+  * kernel-pfroute: Set lower MTU on TUN devices
+  * ike: Fix length of vendor ID Cisco VPN 3000 client
+  * ike: Fix prefix length and data of vendor ID Cisco VPN Concentrator
+  * ikev1: Fix prefix length of vendor ID Cisco Unity
+  * ikev1: Fix prefix length of vendor ID MS NT5 ISAKMPOAKLEY
+  * Use wolfSSL 5.0.0 for tests
+  * Use Botan 2.18.2 for tests
+  * Version bump to 5.9.5dr1
+  * testing: Optimized plugin use in pkcs8 scenarios
+  * testing: Minimum required plugins for net2net-pkcs12 scenarios
+  * testing: Use AES and SHA-256 to protect PKCS#12 files
+
+ -- myml <wurongjie@deepin.org>  Tue, 01 Aug 2023 10:35:43 +0800
+
 strongswan (5.9.4-1) unstable; urgency=medium
 
   [ Paride Legovini ]
