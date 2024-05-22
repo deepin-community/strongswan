@@ -1,16 +1,100 @@
+strongswan (5.9.13-2) unstable; urgency=medium
+
+  * d/control: drop build-dep on systemd (Closes: #1060509)
+
+ -- Yves-Alexis Perez <corsac@debian.org>  Sun, 21 Jan 2024 14:12:25 +0100
+
+strongswan (5.9.13-1) unstable; urgency=medium
+
+  * New upstream version 5.9.13
+
+ -- Yves-Alexis Perez <corsac@debian.org>  Thu, 11 Jan 2024 17:09:17 +0100
+
+strongswan (5.9.12-1) unstable; urgency=medium
+
+  * New upstream version 5.9.12
+    - includes fix for CVE-2023-41913 in charon-tkm
+      Buffer Overflow When Handling DH Public Values
+  * d/strongswan-pki.install: install pki --ocsp manpage
+
+ -- Yves-Alexis Perez <corsac@debian.org>  Mon, 20 Nov 2023 22:19:21 +0100
+
+strongswan (5.9.11-2) unstable; urgency=medium
+
+  [ Helmut Grohne ]
+  * Fix FTBFS when systemd.pc changes systemdsystemunitdir (Closes: #1052718)
+
+ -- Yves-Alexis Perez <corsac@debian.org>  Mon, 13 Nov 2023 20:22:47 +0100
+
+strongswan (5.9.11-1) unstable; urgency=medium
+
+  * New upstream version 5.9.10
+  * d/patches: 0005-libtls-Fix-authentication-bypass-and-expired-pointer
+    dropped, included upstream
+  * New upstream version 5.9.11
+  * d/patches: rebase against new upstream
+
+ -- Yves-Alexis Perez <corsac@debian.org>  Sun, 18 Jun 2023 11:53:15 +0200
+
+strongswan (5.9.8-4) unstable; urgency=medium
+
+  * d/patches: libtls-Fix-authentication-bypass-and-expired-pointer added.
+    Fix authentication bypass and use-after-free in libtls (CVE-2023-26463)
+  * d/control: replace lsb-base dependency by sysvinit-utils
+  * d/control: update standards version to 4.6.2
+
+ -- Yves-Alexis Perez <corsac@debian.org>  Sun, 26 Feb 2023 09:40:09 +0100
+
+strongswan (5.9.8-3) unstable; urgency=medium
+
+  * d/tests: also drop _copyright test since the util is gone as well
+
+ -- Yves-Alexis Perez <corsac@debian.org>  Thu, 03 Nov 2022 18:17:42 +0100
+
+strongswan (5.9.8-2) unstable; urgency=medium
+
+  * d/tests: remove scepclient tests since it's gone (Closes: #1023224)
+
+ -- Yves-Alexis Perez <corsac@debian.org>  Thu, 03 Nov 2022 13:05:27 +0100
+
+strongswan (5.9.8-1) unstable; urgency=medium
+
+  * New upstream version 5.9.8
+    - Includes fix for  CVE-2022-40617, denial of service due to the
+    revocation plugin potentially using untrusted OCSP URIs and CRL
+    distribution points in CRLs. (closes: #1021271)
+  * Remove strongswan-scepclient package, replaced by a pki(1) command
+  * d/p/0006-fix-format-string-issue-in-enum_flags_to_string dropped, included
+    upstream
+  * remove dropped _copyright utility
+  * d/strongswan-pki.install: install est/estca manpages (RFC 7070)
+  * d/s-{started,swanctl}.lintian-overrides updated for new lintian
+  * d/copyright updated for new upstream release
+
+ -- Yves-Alexis Perez <corsac@debian.org>  Wed, 05 Oct 2022 15:25:18 +0200
+
+strongswan (5.9.6-1) unstable; urgency=medium
+
+  * New upstream version 5.9.6
+  * d/p/0006-fix-format-string-issue-in-enum_flags_to_string added
+  * d/libstrongswan.install: install kdf plugin in libstrongswan
+
+ -- Yves-Alexis Perez <corsac@debian.org>  Sat, 07 May 2022 20:19:18 +0200
+
 strongswan (5.9.5-2) unstable; urgency=medium
 
-  [ Deepin Packages Builder ]
-  * sync: sync obs workflows
-  * chore(CI): Update obs tag build workflow
-    Thanks to deepin-ci-robot
-  * chore(CI): remove old obs workflow file
-    Thanks to deepin-ci-robot
-  * chore(CI): Add OWNERS file for auto review or assign
-    Thanks to deepin-ci-robot
-  * chore: new upstream version 5.9.5
+  * actually fix lintian overrides
 
- -- myml <wurongjie@deepin.org>  Tue, 01 Aug 2023 16:25:49 +0800
+ -- Yves-Alexis Perez <corsac@debian.org>  Wed, 26 Jan 2022 16:29:17 +0100
+
+strongswan (5.9.5-1) unstable; urgency=medium
+
+  * New upstream version 5.9.5
+    - eap-authenticator: Enforce failure if MSK generation fails
+      Fix incorrect handling of Early EAP-Success Messages (CVE-2021-45079)
+  * update lintian overrides to match RUNPATH
+
+ -- Yves-Alexis Perez <corsac@debian.org>  Wed, 26 Jan 2022 14:38:54 +0100
 
 strongswan (5.9.4-1) unstable; urgency=medium
 

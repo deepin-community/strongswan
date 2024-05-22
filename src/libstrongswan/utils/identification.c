@@ -3,7 +3,8 @@
  * Copyright (C) 2009-2019 Tobias Brunner
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -1440,6 +1441,7 @@ static private_identification_t* create_from_string_with_prefix_type(char *str)
 		{ "asn1gn:",		ID_DER_ASN1_GN			},
 		{ "xmppaddr:",		ID_DER_ASN1_GN          },
 		{ "keyid:",			ID_KEY_ID				},
+		{ "uri:",			ID_DER_ASN1_GN_URI		},
 	};
 	private_identification_t *this;
 	int i;

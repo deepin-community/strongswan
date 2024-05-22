@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008-2018 Tobias Brunner
  * Copyright (C) 2008 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -1318,8 +1319,8 @@ static void process_acquire(private_kernel_pfkey_ipsec_t *this,
 							struct sadb_msg* msg)
 {
 	pfkey_msg_t response;
+	kernel_acquire_data_t data = {};
 	uint32_t index, reqid = 0;
-	traffic_selector_t *src_ts, *dst_ts;
 	policy_entry_t *policy;
 	policy_sa_t *sa;
 
@@ -1363,10 +1364,16 @@ static void process_acquire(private_kernel_pfkey_ipsec_t *this,
 		this->mutex->unlock(this->mutex);
 	}
 
-	src_ts = sadb_address2ts(response.src);
-	dst_ts = sadb_address2ts(response.dst);
+	if (reqid)
+	{
+		data.src = sadb_address2ts(response.src);
+		data.dst = sadb_address2ts(response.dst);
 
-	charon->kernel->acquire(charon->kernel, reqid, src_ts, dst_ts);
+		charon->kernel->acquire(charon->kernel, reqid, &data);
+
+		data.src->destroy(data.src);
+		data.dst->destroy(data.dst);
+	}
 }
 
 /**
@@ -1650,6 +1657,16 @@ static status_t get_spi_internal(private_kernel_pfkey_ipsec_t *this,
 
 	*spi = received_spi;
 	return SUCCESS;
+}
+
+METHOD(kernel_ipsec_t, get_features, kernel_feature_t,
+	private_kernel_pfkey_ipsec_t *this)
+{
+#ifdef __APPLE__
+	return KERNEL_SA_USE_TIME;
+#else
+	return 0;
+#endif
 }
 
 METHOD(kernel_ipsec_t, get_spi, status_t,
@@ -1954,9 +1971,15 @@ METHOD(kernel_ipsec_t, update_sa, status_t,
 	size_t len;
 	status_t status = FAILED;
 
+	if (data->new_reqid)
+	{
+		DBG1(DBG_KNL, "unable to update SAD entry with SPI %.8x: reqid "
+			 "change is not supported", ntohl(id->spi));
+		return NOT_SUPPORTED;
+	}
 #ifndef SADB_X_EXT_NEW_ADDRESS_SRC
 	/* we can't update the SA if any of the ip addresses have changed.
-	 * that's because we can't use SADB_UPDATE and by deleting and readding the
+	 * that's because we can't use SADB_UPDATE and by deleting and re-adding the
 	 * SA the sequence numbers would get lost */
 	if (!id->src->ip_equals(id->src, data->new_src) ||
 		!id->dst->ip_equals(id->dst, data->new_dst))
@@ -1986,7 +2009,7 @@ METHOD(kernel_ipsec_t, update_sa, status_t,
 
 	memset(&request, 0, sizeof(request));
 
-	DBG2(DBG_KNL, "querying SAD entry with SPI %.8x for update",
+	DBG3(DBG_KNL, "querying SAD entry with SPI %.8x for update",
 		 ntohl(id->spi));
 
 	msg = (struct sadb_msg*)request;
@@ -2131,7 +2154,7 @@ METHOD(kernel_ipsec_t, query_sa, status_t,
 
 	memset(&request, 0, sizeof(request));
 
-	DBG2(DBG_KNL, "querying SAD entry with SPI %.8x", ntohl(id->spi));
+	DBG3(DBG_KNL, "querying SAD entry with SPI %.8x", ntohl(id->spi));
 
 	msg = (struct sadb_msg*)request;
 	msg->sadb_msg_version = PF_KEY_V2;
@@ -2185,9 +2208,9 @@ METHOD(kernel_ipsec_t, query_sa, status_t,
 		/* OS X uses the "last" time of use in usetime */
 		*time = response.lft_current->sadb_lifetime_usetime;
 #else /* !__APPLE__ */
-		/* on Linux, sadb_lifetime_usetime is set to the "first" time of use,
-		 * which is actually correct according to PF_KEY. We have to query
-		 * policies for the last usetime. */
+		/* on Linux and FreeBSD, sadb_lifetime_usetime is set to the "first"
+		 * time of use, which is actually correct according to PF_KEY. We have
+		 * to query policies for the last usetime. */
 		*time = 0;
 #endif /* !__APPLE__ */
 	}
@@ -2339,8 +2362,13 @@ static void add_exclude_route(private_kernel_pfkey_ipsec_t *this,
 		{
 			char *if_name = NULL;
 
-			if (charon->kernel->get_interface(charon->kernel, src, &if_name) &&
-				charon->kernel->add_route(charon->kernel,
+			if (gtw->ip_equals(gtw, dst))
+			{
+				DBG1(DBG_KNL, "not installing exclude route for directly "
+					 "connected peer %H", dst);
+			}
+			else if (charon->kernel->get_interface(charon->kernel, src, &if_name) &&
+					 charon->kernel->add_route(charon->kernel,
 									dst->get_address(dst),
 									dst->get_family(dst) == AF_INET ? 32 : 128,
 									gtw, src, if_name, FALSE) == SUCCESS)
@@ -2429,6 +2457,7 @@ static bool install_route(private_kernel_pfkey_ipsec_t *this,
 {
 	route_entry_t *route, *old;
 	host_t *host, *src, *dst;
+	char *out_interface = NULL;
 	bool is_virtual;
 
 	if (charon->kernel->get_address_by_ts(charon->kernel, out->src_ts, &host,
@@ -2456,7 +2485,7 @@ static bool install_route(private_kernel_pfkey_ipsec_t *this,
 		 * this is required for example on Linux. */
 		if (is_virtual || this->route_via_internal)
 		{
-			free(route->if_name);
+			out_interface = route->if_name;
 			route->if_name = NULL;
 			src = route->src_ip;
 		}
@@ -2476,6 +2505,7 @@ static bool install_route(private_kernel_pfkey_ipsec_t *this,
 		!charon->kernel->get_interface(charon->kernel, src, &route->if_name))
 	{
 		route_entry_destroy(route);
+		free(out_interface);
 		return FALSE;
 	}
 
@@ -2486,6 +2516,7 @@ static bool install_route(private_kernel_pfkey_ipsec_t *this,
 		if (route_entry_equals(old, route))
 		{	/* such a route already exists */
 			route_entry_destroy(route);
+			free(out_interface);
 			return TRUE;
 		}
 		/* uninstall previously installed route */
@@ -2501,8 +2532,10 @@ static bool install_route(private_kernel_pfkey_ipsec_t *this,
 		policy->route = NULL;
 	}
 
-	/* if remote traffic selector covers the IKE peer, add an exclude route */
-	if (charon->kernel->get_features(charon->kernel) & KERNEL_REQUIRE_EXCLUDE_ROUTE)
+	/* if we don't route via outbound interface and the remote traffic selector
+	 * covers the IKE peer, add an exclude route */
+	if (!streq(route->if_name, out_interface) &&
+		charon->kernel->get_features(charon->kernel) & KERNEL_REQUIRE_EXCLUDE_ROUTE)
 	{
 		if (out->dst_ts->is_host(out->dst_ts, dst))
 		{
@@ -2510,6 +2543,7 @@ static bool install_route(private_kernel_pfkey_ipsec_t *this,
 				 "with IKE traffic", out->src_ts, out->dst_ts, policy_dir_names,
 				 policy->direction);
 			route_entry_destroy(route);
+			free(out_interface);
 			return FALSE;
 		}
 		if (out->dst_ts->includes(out->dst_ts, dst))
@@ -2517,6 +2551,7 @@ static bool install_route(private_kernel_pfkey_ipsec_t *this,
 			add_exclude_route(this, route, out->generic.sa->src, dst);
 		}
 	}
+	free(out_interface);
 
 	DBG2(DBG_KNL, "installing route: %R via %H src %H dev %s",
 		 out->dst_ts, route->gateway, route->src_ip, route->if_name);
@@ -2863,7 +2898,7 @@ METHOD(kernel_ipsec_t, query_policy, status_t,
 		return NOT_FOUND;
 	}
 
-	DBG2(DBG_KNL, "querying policy %R === %R %N", id->src_ts, id->dst_ts,
+	DBG3(DBG_KNL, "querying policy %R === %R %N", id->src_ts, id->dst_ts,
 		 policy_dir_names, id->dir);
 
 	/* create a policy */
@@ -3278,12 +3313,12 @@ METHOD(kernel_ipsec_t, destroy, void,
 kernel_pfkey_ipsec_t *kernel_pfkey_ipsec_create()
 {
 	private_kernel_pfkey_ipsec_t *this;
-	bool register_for_events = TRUE;
 	int rcv_buffer;
 
 	INIT(this,
 		.public = {
 			.interface = {
+				.get_features = _get_features,
 				.get_spi = _get_spi,
 				.get_cpi = _get_cpi,
 				.add_sa  = _add_sa,
@@ -3314,11 +3349,6 @@ kernel_pfkey_ipsec_t *kernel_pfkey_ipsec_create()
 								FALSE, lib->ns),
 	);
 
-	if (streq(lib->ns, "starter"))
-	{	/* starter has no threads, so we do not register for kernel events */
-		register_for_events = FALSE;
-	}
-
 	/* create a PF_KEY socket to communicate with the kernel */
 	this->socket = socket(PF_KEY, SOCK_RAW, PF_KEY_V2);
 	if (this->socket <= 0)
@@ -3328,41 +3358,38 @@ kernel_pfkey_ipsec_t *kernel_pfkey_ipsec_create()
 		return NULL;
 	}
 
-	if (register_for_events)
+	/* create a PF_KEY socket for ACQUIRE & EXPIRE */
+	this->socket_events = socket(PF_KEY, SOCK_RAW, PF_KEY_V2);
+	if (this->socket_events <= 0)
 	{
-		/* create a PF_KEY socket for ACQUIRE & EXPIRE */
-		this->socket_events = socket(PF_KEY, SOCK_RAW, PF_KEY_V2);
-		if (this->socket_events <= 0)
-		{
-			DBG1(DBG_KNL, "unable to create PF_KEY event socket");
-			destroy(this);
-			return NULL;
-		}
-
-		rcv_buffer = lib->settings->get_int(lib->settings,
-					"%s.plugins.kernel-pfkey.events_buffer_size", 0, lib->ns);
-		if (rcv_buffer > 0)
-		{
-			if (setsockopt(this->socket_events, SOL_SOCKET, SO_RCVBUF,
-						   &rcv_buffer, sizeof(rcv_buffer)) == -1)
-			{
-				DBG1(DBG_KNL, "unable to set receive buffer size on PF_KEY "
-					 "event socket: %s", strerror(errno));
-			}
-		}
-
-		/* register the event socket */
-		if (register_pfkey_socket(this, SADB_SATYPE_ESP) != SUCCESS ||
-			register_pfkey_socket(this, SADB_SATYPE_AH) != SUCCESS)
-		{
-			DBG1(DBG_KNL, "unable to register PF_KEY event socket");
-			destroy(this);
-			return NULL;
-		}
-
-		lib->watcher->add(lib->watcher, this->socket_events, WATCHER_READ,
-						  (watcher_cb_t)receive_events, this);
+		DBG1(DBG_KNL, "unable to create PF_KEY event socket");
+		destroy(this);
+		return NULL;
 	}
+
+	rcv_buffer = lib->settings->get_int(lib->settings,
+					"%s.plugins.kernel-pfkey.events_buffer_size", 0, lib->ns);
+	if (rcv_buffer > 0)
+	{
+		if (setsockopt(this->socket_events, SOL_SOCKET, SO_RCVBUF,
+					   &rcv_buffer, sizeof(rcv_buffer)) == -1)
+		{
+			DBG1(DBG_KNL, "unable to set receive buffer size on PF_KEY "
+				 "event socket: %s", strerror(errno));
+		}
+	}
+
+	/* register the event socket */
+	if (register_pfkey_socket(this, SADB_SATYPE_ESP) != SUCCESS ||
+		register_pfkey_socket(this, SADB_SATYPE_AH) != SUCCESS)
+	{
+		DBG1(DBG_KNL, "unable to register PF_KEY event socket");
+		destroy(this);
+		return NULL;
+	}
+
+	lib->watcher->add(lib->watcher, this->socket_events, WATCHER_READ,
+					  (watcher_cb_t)receive_events, this);
 
 	return &this->public;
 }
