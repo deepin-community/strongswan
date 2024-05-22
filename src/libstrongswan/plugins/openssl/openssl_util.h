@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -47,20 +48,18 @@
 bool openssl_compute_shared_key(EVP_PKEY *priv, EVP_PKEY *pub, chunk_t *shared);
 
 /**
- * Creates a hash of a given type of a chunk of data.
+ * Calculate a fingerprint from the given key (cached under it).
  *
- * Note: this function allocates memory for the hash
- *
- * @param hash_type	NID of the hash
- * @param data		the chunk of data to hash
- * @param hash		chunk that contains the hash
+ * @param key		key object
+ * @param type		encoding type
+ * @param fp		allocated fingerprint
  * @return			TRUE on success, FALSE otherwise
  */
-bool openssl_hash_chunk(int hash_type, chunk_t data, chunk_t *hash);
+bool openssl_fingerprint(EVP_PKEY *key, cred_encoding_type_t type, chunk_t *fp);
 
 /**
  * Concatenates two bignums into a chunk, thereby enforcing the length of
- * a single BIGNUM, if necessary, by pre-pending it with zeros.
+ * a single BIGNUM, if necessary, by prepending it with zeros.
  *
  * Note: this function allocates memory for the chunk
  *
