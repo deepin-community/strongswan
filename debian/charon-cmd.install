@@ -1,2 +1,4 @@
+etc/strongswan.d/charon-cmd.conf
 usr/sbin/charon-cmd
 usr/share/man/man8/charon-cmd.8
+usr/share/strongswan/templates/config/strongswan.d/charon-cmd.conf

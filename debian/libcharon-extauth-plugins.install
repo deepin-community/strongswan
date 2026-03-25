@@ -17,3 +17,6 @@ usr/share/strongswan/templates/config/plugins/xauth-generic.conf
 # configuration files
 etc/strongswan.d/charon/eap-mschapv2.conf
 etc/strongswan.d/charon/xauth-generic.conf
+etc/strongswan.d/charon-cmd/eap-mschapv2.conf
+etc/strongswan.d/charon-cmd/xauth-generic.conf
+etc/strongswan.d/charon-nm/eap-mschapv2.conf

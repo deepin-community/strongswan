@@ -81,6 +81,8 @@ enum kernel_feature_t {
 	KERNEL_POLICY_SPI = (1<<4),
 	/** IPsec backend reports use time per SA via query_sa() */
 	KERNEL_SA_USE_TIME = (1<<5),
+	/** IPsec backend associates acquires and SAs with a sequence number */
+	KERNEL_ACQUIRE_SEQ = (1<<6),
 };
 
 /**
@@ -310,6 +312,8 @@ struct kernel_interface_t {
 	 * The returned host is allocated and must be destroyed.
 	 * An optional src address can be used to check if a route is available
 	 * for the given source to dest.
+	 * 0.0.0.0/:: may get returned if an interface but no next hop can be
+	 * determined.
 	 *
 	 * @param dest			target destination address
 	 * @param prefix		prefix length if dest is a subnet, -1 for auto

@@ -9,6 +9,8 @@
   # CAP_DAC_OVERRIDE is needed for optional charon.user/charon.group
   # configuration
   capability dac_override,
+  capability setuid,
+  capability setgid,
 
   # Allow reading strongswan.conf configuration files
   /etc/strongswan.conf          r,

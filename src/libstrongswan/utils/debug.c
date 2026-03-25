@@ -24,6 +24,7 @@ ENUM(debug_names, DBG_DMN, DBG_ANY,
 	"IKE",
 	"CHD",
 	"JOB",
+	"WCH",
 	"CFG",
 	"KNL",
 	"NET",
@@ -46,6 +47,7 @@ ENUM(debug_lower_names, DBG_DMN, DBG_ANY,
 	"ike",
 	"chd",
 	"job",
+	"wch",
 	"cfg",
 	"knl",
 	"net",
@@ -110,6 +112,18 @@ void dbg_default_set_level_group(debug_t group, level_t level)
 			default_level[group] = level-1;
 		}
 	}
+}
+
+/*
+ * Described in header
+ */
+level_t dbg_default_get_level_group(debug_t group)
+{
+	if (group < DBG_ANY)
+	{
+		return default_level[group] + 1;
+	}
+	return default_level[0];
 }
 
 /*

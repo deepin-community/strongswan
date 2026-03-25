@@ -43,6 +43,8 @@ enum debug_t {
 	DBG_CHD,
 	/** job processing */
 	DBG_JOB,
+	/** file descriptor watcher */
+	DBG_WCH,
 	/** configuration backends */
 	DBG_CFG,
 	/** kernel interface */
@@ -156,6 +158,9 @@ void dbg_default_set_level(level_t level);
 
 /** set the level logged by dbg_default() for a specific group */
 void dbg_default_set_level_group(debug_t group, level_t level);
+
+/** get the level logged by dbg_default() for a specific group */
+level_t dbg_default_get_level_group(debug_t group);
 
 /** set the stream logged by dbg_default() to */
 void dbg_default_set_stream(FILE *stream);

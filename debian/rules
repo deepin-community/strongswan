@@ -5,6 +5,7 @@ export DEB_BUILD_MAINT_OPTIONS=hardening=+all
 
 CONFIGUREARGS := --libdir=/usr/lib --libexecdir=/usr/lib \
 		--enable-addrblock \
+		--enable-aes \
 		--enable-agent \
 		--enable-bypass-lan \
 		--enable-ccm \
@@ -13,6 +14,7 @@ CONFIGUREARGS := --libdir=/usr/lib --libexecdir=/usr/lib \
 		--enable-cmd \
 		--enable-ctr \
 		--enable-curl \
+		--enable-curve25519 \
 		--enable-eap-aka \
 		--enable-eap-gtc \
 		--enable-eap-identity \
@@ -26,14 +28,23 @@ CONFIGUREARGS := --libdir=/usr/lib --libexecdir=/usr/lib \
 		--enable-forecast \
 		--enable-gcm \
 		--enable-gcrypt \
+		--enable-gmp \
 		--enable-ha \
+		--enable-hmac \
 		--enable-kernel-libipsec \
 		--enable-ldap \
 		--enable-led \
 		--enable-lookip \
 		--enable-mediation \
+		--enable-md5 \
+		--enable-mgf1 \
 		--enable-openssl \
 		--enable-pkcs11 \
+		--enable-pkcs12 \
+		--enable-rc2 \
+		--enable-sha1 \
+		--enable-sha2 \
+		--enable-stroke \
 		--enable-test-vectors \
 		--enable-tpm \
 		--enable-tss-tss2 \
@@ -43,6 +54,7 @@ CONFIGUREARGS := --libdir=/usr/lib --libexecdir=/usr/lib \
 		--disable-blowfish \
 		--disable-fast \
 		--disable-des # BSD-Young license
+		--plugins-packaged-seperately=yes
 	#--with-user=strongswan --with-group=nogroup
 	#	--enable-kernel-pfkey --enable-kernel-klips \
 	# And for --enable-eap-sim we would need the library, which we don't
@@ -130,10 +142,14 @@ ifeq ($(DEB_HOST_ARCH_OS),linux)
 	dh_install -p libstrongswan usr/lib/ipsec/plugins/libstrongswan-kernel-netlink.so
 	dh_install -p libstrongswan usr/share/strongswan/templates/config/plugins/kernel-netlink.conf
 	dh_install -p libstrongswan etc/strongswan.d/charon/kernel-netlink.conf
+	dh_install -p libstrongswan etc/strongswan.d/charon-cmd/kernel-netlink.conf
+	dh_install -p libstrongswan etc/strongswan.d/charon-nm/kernel-netlink.conf
 
 	dh_install -p libstrongswan-extra-plugins usr/lib/ipsec/plugins/libstrongswan-af-alg.so
 	dh_install -p libstrongswan-extra-plugins usr/share/strongswan/templates/config/plugins/af-alg.conf
 	dh_install -p libstrongswan-extra-plugins etc/strongswan.d/charon/af-alg.conf
+	dh_install -p libstrongswan-extra-plugins etc/strongswan.d/charon-cmd/af-alg.conf
+	dh_install -p libstrongswan-extra-plugins etc/strongswan.d/charon-nm/af-alg.conf
 	# the systemd service file only gets generated on Linux
 	dh_install -p strongswan-starter "$(deb_systemdsystemunitdir)/strongswan-starter.service"
 	dh_link -p strongswan-starter "$(deb_systemdsystemunitdir)/strongswan-starter.service" "$(deb_systemdsystemunitdir)/ipsec.service"
@@ -162,20 +178,28 @@ ifeq ($(DEB_HOST_ARCH_CPU),i386)
 	dh_install -p libstrongswan-extra-plugins usr/lib/ipsec/plugins/libstrongswan-rdrand.so
 	dh_install -p libstrongswan-extra-plugins usr/share/strongswan/templates/config/plugins/rdrand.conf
 	dh_install -p libstrongswan-extra-plugins etc/strongswan.d/charon/rdrand.conf
+	dh_install -p libstrongswan-extra-plugins etc/strongswan.d/charon-cmd/rdrand.conf
+	dh_install -p libstrongswan-extra-plugins etc/strongswan.d/charon-nm/rdrand.conf
 
 	dh_install -p libstrongswan-standard-plugins usr/lib/ipsec/plugins/libstrongswan-aesni.so
 	dh_install -p libstrongswan-standard-plugins usr/share/strongswan/templates/config/plugins/aesni.conf
 	dh_install -p libstrongswan-standard-plugins etc/strongswan.d/charon/aesni.conf
+	dh_install -p libstrongswan-standard-plugins etc/strongswan.d/charon-nm/aesni.conf
+	dh_install -p libstrongswan-standard-plugins etc/strongswan.d/charon-cmd/aesni.conf
 endif
 
 ifeq ($(DEB_HOST_ARCH_CPU), amd64)
 	dh_install -p libstrongswan-extra-plugins usr/lib/ipsec/plugins/libstrongswan-rdrand.so
 	dh_install -p libstrongswan-extra-plugins usr/share/strongswan/templates/config/plugins/rdrand.conf
 	dh_install -p libstrongswan-extra-plugins etc/strongswan.d/charon/rdrand.conf
+	dh_install -p libstrongswan-extra-plugins etc/strongswan.d/charon-cmd/rdrand.conf
+	dh_install -p libstrongswan-extra-plugins etc/strongswan.d/charon-nm/rdrand.conf
 
 	dh_install -p libstrongswan-standard-plugins usr/lib/ipsec/plugins/libstrongswan-aesni.so
 	dh_install -p libstrongswan-standard-plugins usr/share/strongswan/templates/config/plugins/aesni.conf
 	dh_install -p libstrongswan-standard-plugins etc/strongswan.d/charon/aesni.conf
+	dh_install -p libstrongswan-standard-plugins etc/strongswan.d/charon-nm/aesni.conf
+	dh_install -p libstrongswan-standard-plugins etc/strongswan.d/charon-cmd/aesni.conf
 endif
 
 	# then install the rest, ignoring the above
@@ -206,7 +230,6 @@ endif
 	chmod 600 $(CURDIR)/debian/strongswan-starter/etc/ipsec.secrets
 	chmod 700 -R $(CURDIR)/debian/strongswan-starter/etc/ipsec.d/private/
 	chmod 700 -R $(CURDIR)/debian/strongswan-starter/var/lib/strongswan/
-	chmod 700 -R $(CURDIR)/debian/strongswan-swanctl/etc/swanctl/bliss/
 	chmod 700 -R $(CURDIR)/debian/strongswan-swanctl/etc/swanctl/ecdsa/
 	chmod 700 -R $(CURDIR)/debian/strongswan-swanctl/etc/swanctl/pkcs8/
 	chmod 700 -R $(CURDIR)/debian/strongswan-swanctl/etc/swanctl/private/

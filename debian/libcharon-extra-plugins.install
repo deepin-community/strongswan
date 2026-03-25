@@ -46,6 +46,7 @@ usr/share/strongswan/templates/config/plugins/xauth-eap.conf
 usr/share/strongswan/templates/config/plugins/xauth-pam.conf
 usr/share/strongswan/templates/config/strongswan.d/tnc.conf
 etc/strongswan.d/tnc.conf
+# charon config files
 etc/strongswan.d/charon/addrblock.conf
 etc/strongswan.d/charon/certexpire.conf
 etc/strongswan.d/charon/eap-aka.conf
@@ -68,7 +69,19 @@ etc/strongswan.d/charon/tnc-tnccs.conf
 etc/strongswan.d/charon/unity.conf
 etc/strongswan.d/charon/xauth-eap.conf
 etc/strongswan.d/charon/xauth-pam.conf
-debian/usr.lib.ipsec.lookip /etc/apparmor.d/
+# charon-nm
+etc/strongswan.d/charon-nm/eap-gtc.conf
+etc/strongswan.d/charon-nm/eap-identity.conf
+etc/strongswan.d/charon-nm/eap-md5.conf
+etc/strongswan.d/charon-nm/eap-tls.conf
+etc/strongswan.d/charon-nm/eap-ttls.conf
+# charon-cmd
+etc/strongswan.d/charon-cmd/eap-gtc.conf
+etc/strongswan.d/charon-cmd/eap-identity.conf
+etc/strongswan.d/charon-cmd/eap-md5.conf
+etc/strongswan.d/charon-cmd/eap-tls.conf
+etc/strongswan.d/charon-cmd/eap-ttls.conf
+etc/strongswan.d/charon-cmd/kernel-libipsec.conf
 # support libs
 #usr/lib/ipsec/libfast.so*
 usr/lib/ipsec/libipsec.so*
