@@ -1,3 +1,9 @@
+strongswan (5.9.13-2deepin1) unstable; urgency=medium
+
+  * fix CVE-2026-25075
+
+ -- lichenggang <lichenggang@uniontech.com>  Tue, 07 Apr 2026 13:22:47 +0800
+
 strongswan (5.9.13-2) unstable; urgency=medium
 
   * d/control: drop build-dep on systemd (Closes: #1060509)
