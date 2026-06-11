@@ -5,6 +5,7 @@ export DEB_BUILD_MAINT_OPTIONS=hardening=+all
 
 CONFIGUREARGS := --libdir=/usr/lib --libexecdir=/usr/lib \
 		--enable-addrblock \
+		--enable-aes \
 		--enable-agent \
 		--enable-bypass-lan \
 		--enable-ccm \
@@ -13,6 +14,7 @@ CONFIGUREARGS := --libdir=/usr/lib --libexecdir=/usr/lib \
 		--enable-cmd \
 		--enable-ctr \
 		--enable-curl \
+		--enable-curve25519 \
 		--enable-eap-aka \
 		--enable-eap-gtc \
 		--enable-eap-identity \
@@ -26,14 +28,23 @@ CONFIGUREARGS := --libdir=/usr/lib --libexecdir=/usr/lib \
 		--enable-forecast \
 		--enable-gcm \
 		--enable-gcrypt \
+		--enable-gmp \
 		--enable-ha \
+		--enable-hmac \
 		--enable-kernel-libipsec \
 		--enable-ldap \
 		--enable-led \
 		--enable-lookip \
 		--enable-mediation \
+		--enable-md5 \
+		--enable-mgf1 \
 		--enable-openssl \
 		--enable-pkcs11 \
+		--enable-pkcs12 \
+		--enable-rc2 \
+		--enable-sha1 \
+		--enable-sha2 \
+		--enable-stroke \
 		--enable-test-vectors \
 		--enable-tpm \
 		--enable-tss-tss2 \
@@ -206,7 +217,6 @@ endif
 	chmod 600 $(CURDIR)/debian/strongswan-starter/etc/ipsec.secrets
 	chmod 700 -R $(CURDIR)/debian/strongswan-starter/etc/ipsec.d/private/
 	chmod 700 -R $(CURDIR)/debian/strongswan-starter/var/lib/strongswan/
-	chmod 700 -R $(CURDIR)/debian/strongswan-swanctl/etc/swanctl/bliss/
 	chmod 700 -R $(CURDIR)/debian/strongswan-swanctl/etc/swanctl/ecdsa/
 	chmod 700 -R $(CURDIR)/debian/strongswan-swanctl/etc/swanctl/pkcs8/
 	chmod 700 -R $(CURDIR)/debian/strongswan-swanctl/etc/swanctl/private/
