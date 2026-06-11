@@ -196,7 +196,6 @@ DLLIB = @DLLIB@
 DLLTOOL = @DLLTOOL@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
-EASY_INSTALL = @EASY_INSTALL@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
@@ -204,6 +203,7 @@ EGREP = @EGREP@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+FILECMD = @FILECMD@
 FUZZING_CFLAGS = @FUZZING_CFLAGS@
 FUZZING_LDFLAGS = @FUZZING_LDFLAGS@
 GEM = @GEM@
@@ -264,7 +264,6 @@ PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 PLUGIN_CFLAGS = @PLUGIN_CFLAGS@
 PTHREADLIB = @PTHREADLIB@
 PYTHON = @PYTHON@
-PYTHONEGGINSTALLDIR = @PYTHONEGGINSTALLDIR@
 PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
 PYTHON_PACKAGE_VERSION = @PYTHON_PACKAGE_VERSION@
 PYTHON_PLATFORM = @PYTHON_PLATFORM@
@@ -432,6 +431,8 @@ cert_install_availabledir = $(sysconfdir)/cert-enroll.d/cert-install-available
 cert_install_available_DATA = \
 	cert-install-ssl \
 	cert-install-sssd \
+	cert-install-ldaputils \
+	cert-install-cockpit \
 	cert-install-dirsrv \
 	cert-install-lighttpd \
 	cert-install-openxpki \
@@ -441,9 +442,10 @@ cert_install_available_DATA = \
 
 EXTRA_DIST = \
 	cert-enroll.conf cert-enroll.in cert-enroll.service.in cert-enroll.timer \
-	cert-install-dirsrv cert-install-gitea cert-install-ipsec.in \
-	cert-install-lighttpd cert-install-openxpki cert-install-ssl \
-	cert-install-sssd cert-install-swanctl.in
+	cert-install-cockpit cert-install-dirsrv cert-install-gitea \
+	cert-install-ipsec.in cert-install-ldaputils cert-install-lighttpd \
+	cert-install-openxpki cert-install-ssl cert-install-sssd \
+	cert-install-swanctl.in
 
 man8_MANS = cert-enroll.8
 CLEANFILES = cert-enroll cert-install-swanctl cert-install-ipsec \
