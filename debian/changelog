@@ -1,3 +1,14 @@
+strongswan (5.9.13-2deepin1+security1) unstable; urgency=medium
+
+  * CVE-2026-47895: Fix double-free when cloning certain identities in
+    identification_t class. The clone() method incorrectly handles
+    identities with empty but non-NULL encoding, leading to a double-free
+    once the second object is destroyed. This could be exploited by
+    unauthenticated remote attackers via EAP-Identity exchange to cause a
+    crash or potentially achieve remote code execution.
+
+ -- deepin-ci-robot <packages@deepin.org>  Thu, 18 Jun 2026 03:23:43 +0800
+
 strongswan (5.9.13-2deepin1) unstable; urgency=medium
 
   * fix CVE-2026-25075
