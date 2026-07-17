@@ -3,3 +3,4 @@
 04_disable-libtls-tests.patch
 dont-load-kernel-libipsec-plugin-by-default.patch
 CVE-2026-25075.patch
+CVE-2026-35331.patch
