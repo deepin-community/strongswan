@@ -5,3 +5,4 @@ dont-load-kernel-libipsec-plugin-by-default.patch
 CVE-2026-25075.patch
 CVE-2026-47895.patch
 CVE-2026-35330.patch
+CVE-2026-35328.patch
