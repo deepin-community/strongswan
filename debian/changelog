@@ -1,3 +1,9 @@
+strongswan (6.0.1-6+deb13u7) unstable; urgency=medium
+
+  * Rebuild with LTO enabled (dpkg vendor feature optimize/lto).
+
+ -- tunaichao <tunaichao@uniontech.com>  Thu, 10 Sep 2026 20:57:34 +0800
+
 strongswan (6.0.1-6+deb13u6) trixie-security; urgency=medium
 
   * d/patches: add fix for double-free when cloning empty IDs (CVE-2026-47895)
