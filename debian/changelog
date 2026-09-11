@@ -1,6 +1,10 @@
 strongswan (5.9.13-2deepin7) unstable; urgency=medium
 
   * fix(cve): CVE-2026-35329
+  * fix(cve): CVE-2026-78135 (unknown) - ikev2: Properly reject
+    CREATE_CHILD_SA requests on unestablished IKE_SAs   Upstream:
+    https://download.strongswan.org/security/CVE-2026-78135/strongswan-
+    5.9.7-6.0.7_early_create_child_sa.patch
 
  -- deepin-ci-robot <packages@deepin.org>  Fri, 07 Aug 2026 21:22:14 +0800
 
