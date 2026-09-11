@@ -5,6 +5,10 @@ strongswan (5.9.13-2deepin7) unstable; urgency=medium
     CREATE_CHILD_SA requests on unestablished IKE_SAs   Upstream:
     https://download.strongswan.org/security/CVE-2026-78135/strongswan-
     5.9.7-6.0.7_early_create_child_sa.patch
+  * fix(cve): CVE-2026-78124 (unknown) - openssl: Fix memory leaks after
+    enumerating certificates in PKCS#7 container   Upstream:
+    https://download.strongswan.org/security/CVE-2026-78124/strongswan-
+    5.0.2-6.0.7_openssl_pkcs7_certs_leak.patch
 
  -- deepin-ci-robot <packages@deepin.org>  Fri, 07 Aug 2026 21:22:14 +0800
 
