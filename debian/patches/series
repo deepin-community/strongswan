@@ -17,3 +17,4 @@ dont-load-kernel-libipsec-plugin-by-default.patch
 0017-identification-Fix-double-free-when-cloning-empty-ID.patch
 CVE-2026-78135.patch
 CVE-2026-78124.patch
+CVE-2026-78123.patch
