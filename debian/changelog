@@ -9,6 +9,10 @@ strongswan (5.9.13-2deepin7) unstable; urgency=medium
     enumerating certificates in PKCS#7 container   Upstream:
     https://download.strongswan.org/security/CVE-2026-78124/strongswan-
     5.0.2-6.0.7_openssl_pkcs7_certs_leak.patch
+  * fix(cve): CVE-2026-78123 (unknown) - openssl: Fix undefined memory
+    access when verifying PKCS#7 containers   Upstream:
+    https://download.strongswan.org/security/CVE-2026-78123/strongswan-
+    5.0.2-6.0.7_openssl_pkcs7_info_init.patch
 
  -- deepin-ci-robot <packages@deepin.org>  Fri, 07 Aug 2026 21:22:14 +0800
 
