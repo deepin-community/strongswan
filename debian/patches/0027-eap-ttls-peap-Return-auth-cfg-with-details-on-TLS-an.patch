@@ -1,11 +1,53 @@
-Description: CVE-2026-78134 (unknown) - CVE-2026-78134 兼容性修复：添加 auth_cfg.h 声明包含
-Author: deepin-ci-robot <packages@deepin.org>
-Origin: N/A
-Bug: https://nvd.nist.gov/vuln/detail/CVE-2026-78134
-Last-Update: 2026-09-20
+From: Tobias Brunner <tobias@strongswan.org>
+Date: Mon, 27 Jul 2026 15:05:45 +0200
+Subject: eap-ttls/peap: Return auth-cfg with details on TLS and inner EAP
+ method
+
+This fixes several issues with binding identities to the IKE SA.
+
+If the client is authenticated with a certificate, the previous code still
+used the client's proclaimed inner EAP-Identity when starting the EAP-TNC
+method.  So that method would potentially operate on an unverified
+identity.
+
+Second, if the inner EAP method overrides the client identity (the only
+one is currently EAP-MSCHAPV2), the missing merge meant that the outer
+IKE/EAP identity could potentially be unconfirmed.
+
+For inner methods that don't override the identity (e.g. EAP-MD5), not
+propagating the inner EAP-Identity could potentially have the same
+effect.
+
+While the EAP-TTLS implementation returned the auth-cfg of the TLS
+exchange since the first referenced commit, this was mainly intended to
+enforce public key constraints.  So it didn't cover the phase 2 EAP
+methods.  For some reason EAP-PEAP did not get that method at all in that
+changeset, so we'll add that now.
+
+Additionally, the EAP-PEAP implementation now forwards the phase 2 EAP
+method type to EAP-TNC like the EAP-TTLS implementation already did,
+which allows a more informed decision on the client's identity.
+
+Fixes: 0864a31d13ff ("eap-ttls: Support EAP auth information getter in EAP-TTLS")
+Fixes: 79f2102cb442 ("implemented server side support for EAP-TTLS")
+Fixes: 2a421163bf4f ("make TNC client authentication type available to IMVs")
+Fixes: 1be296dfb2af ("implemented the PEAP tunneling protocol as an EAP plugin")
+Fixes: CVE-2026-78134
 ---
+ src/libcharon/plugins/eap_peap/eap_peap.c        | 49 +++++++++++++-
+ src/libcharon/plugins/eap_peap/eap_peap_peer.c   | 20 ++++++
+ src/libcharon/plugins/eap_peap/eap_peap_peer.h   |  7 ++
+ src/libcharon/plugins/eap_peap/eap_peap_server.c | 81 +++++++++++++++++++++---
+ src/libcharon/plugins/eap_peap/eap_peap_server.h |  7 ++
+ src/libcharon/plugins/eap_ttls/eap_ttls.c        | 43 ++++++++++++-
+ src/libcharon/plugins/eap_ttls/eap_ttls_peer.c   | 19 ++++++
+ src/libcharon/plugins/eap_ttls/eap_ttls_peer.h   |  7 ++
+ src/libcharon/plugins/eap_ttls/eap_ttls_server.c | 56 ++++++++++++++--
+ src/libcharon/plugins/eap_ttls/eap_ttls_server.h |  7 ++
+ 10 files changed, 278 insertions(+), 18 deletions(-)
+
 diff --git a/src/libcharon/plugins/eap_peap/eap_peap.c b/src/libcharon/plugins/eap_peap/eap_peap.c
-index 3573cba7..cd942f13 100644
+index 3573cba..cd942f1 100644
 --- a/src/libcharon/plugins/eap_peap/eap_peap.c
 +++ b/src/libcharon/plugins/eap_peap/eap_peap.c
 @@ -40,6 +40,25 @@ struct private_eap_peap_t {
@@ -97,7 +139,7 @@ index 3573cba7..cd942f13 100644
  								"%s.plugins.eap-peap.request_peer_auth", FALSE,
  								lib->ns))
 diff --git a/src/libcharon/plugins/eap_peap/eap_peap_peer.c b/src/libcharon/plugins/eap_peap/eap_peap_peer.c
-index 95213a32..f6c087ab 100644
+index 95213a3..f6c087a 100644
 --- a/src/libcharon/plugins/eap_peap/eap_peap_peer.c
 +++ b/src/libcharon/plugins/eap_peap/eap_peap_peer.c
 @@ -52,6 +52,11 @@ struct private_eap_peap_peer_t {
@@ -158,18 +200,10 @@ index 95213a32..f6c087ab 100644
  	);
  
 diff --git a/src/libcharon/plugins/eap_peap/eap_peap_peer.h b/src/libcharon/plugins/eap_peap/eap_peap_peer.h
-index 53c25cdd..f97083ea 100644
+index 53c25cd..7d16957 100644
 --- a/src/libcharon/plugins/eap_peap/eap_peap_peer.h
 +++ b/src/libcharon/plugins/eap_peap/eap_peap_peer.h
-@@ -26,6 +26,7 @@ typedef struct eap_peap_peer_t eap_peap_peer_t;
- 
- #include "tls_application.h"
- 
-+#include <credentials/auth_cfg.h>
- #include <library.h>
- #include <sa/eap/eap_method.h>
- 
-@@ -38,6 +39,13 @@ struct eap_peap_peer_t {
+@@ -38,6 +38,13 @@ struct eap_peap_peer_t {
  	 * Implements the TLS application data handler.
  	 */
  	tls_application_t application;
@@ -184,7 +218,7 @@ index 53c25cdd..f97083ea 100644
  
  /**
 diff --git a/src/libcharon/plugins/eap_peap/eap_peap_server.c b/src/libcharon/plugins/eap_peap/eap_peap_server.c
-index 29ab9b45..fb79d643 100644
+index 29ab9b4..388c3c6 100644
 --- a/src/libcharon/plugins/eap_peap/eap_peap_server.c
 +++ b/src/libcharon/plugins/eap_peap/eap_peap_server.c
 @@ -20,6 +20,8 @@
@@ -329,8 +363,8 @@ index 29ab9b45..fb79d643 100644
  
  			/* EAP-PEAP requires the sending of an inner EAP_SUCCESS message */
  			this->phase2_result = EAP_SUCCESS;
-@@ -401,6 +453,12 @@ METHOD(tls_application_t, build, status_t,
- 	return INVALID_STATE;
+@@ -407,11 +459,18 @@ METHOD(eap_peap_server_t, set_tls, void,
+ 	this->tls = tls;
  }
  
 +METHOD(eap_peap_server_t, get_auth, auth_cfg_t*,
@@ -339,10 +373,8 @@ index 29ab9b45..fb79d643 100644
 +	return this->auth;
 +}
 +
- METHOD(eap_peap_server_t, set_tls, void,
- 	private_eap_peap_server_t *this, tls_t *tls)
- {
-@@ -412,6 +470,7 @@ METHOD(tls_application_t, destroy, void,
+ METHOD(tls_application_t, destroy, void,
+ 	private_eap_peap_server_t *this)
  {
  	this->server->destroy(this->server);
  	this->peer->destroy(this->peer);
@@ -364,33 +396,25 @@ index 29ab9b45..fb79d643 100644
  		.start_phase2_tnc = TRUE,
  		.start_phase2_id = lib->settings->get_bool(lib->settings,
 diff --git a/src/libcharon/plugins/eap_peap/eap_peap_server.h b/src/libcharon/plugins/eap_peap/eap_peap_server.h
-index 3abe88be..c1561d70 100644
+index 3abe88b..8080e9f 100644
 --- a/src/libcharon/plugins/eap_peap/eap_peap_server.h
 +++ b/src/libcharon/plugins/eap_peap/eap_peap_server.h
-@@ -27,6 +27,7 @@ typedef struct eap_peap_server_t eap_peap_server_t;
- #include "tls.h"
- #include "tls_application.h"
- 
-+#include <credentials/auth_cfg.h>
- #include <library.h>
- #include <sa/eap/eap_method.h>
- 
-@@ -40,6 +41,13 @@ struct eap_peap_server_t {
+@@ -47,6 +47,13 @@ struct eap_peap_server_t {
+ 	 * @param tls		TLS connection
  	 */
- 	tls_application_t application;
- 
+ 	void (*set_tls)(eap_peap_server_t *this, tls_t *tls);
++
 +	/**
 +	 * Get authentication details of this EAP method and its inner method(s).
 +	 *
 +	 * @return				auth method, internal data
 +	 */
 +	auth_cfg_t *(*get_auth)(eap_peap_server_t *this);
-+
- 	/**
- 	 * Set a reference to the parent TLS connection this application is
- 	 * assigned to.
+ };
+ 
+ /**
 diff --git a/src/libcharon/plugins/eap_ttls/eap_ttls.c b/src/libcharon/plugins/eap_ttls/eap_ttls.c
-index d8ad781f..3df78bba 100644
+index d8ad781..3df78bb 100644
 --- a/src/libcharon/plugins/eap_ttls/eap_ttls.c
 +++ b/src/libcharon/plugins/eap_ttls/eap_ttls.c
 @@ -40,6 +40,25 @@ struct private_eap_ttls_t {
@@ -464,7 +488,7 @@ index d8ad781f..3df78bba 100644
  	if (is_server && !lib->settings->get_bool(lib->settings,
  								"%s.plugins.eap-ttls.request_peer_auth", FALSE,
 diff --git a/src/libcharon/plugins/eap_ttls/eap_ttls_peer.c b/src/libcharon/plugins/eap_ttls/eap_ttls_peer.c
-index 63126a5c..f8229f5e 100644
+index 63126a5..f8229f5 100644
 --- a/src/libcharon/plugins/eap_ttls/eap_ttls_peer.c
 +++ b/src/libcharon/plugins/eap_ttls/eap_ttls_peer.c
 @@ -54,6 +54,11 @@ struct private_eap_ttls_peer_t {
@@ -524,18 +548,10 @@ index 63126a5c..f8229f5e 100644
  	);
  
 diff --git a/src/libcharon/plugins/eap_ttls/eap_ttls_peer.h b/src/libcharon/plugins/eap_ttls/eap_ttls_peer.h
-index 0c3d90a4..17ba85e4 100644
+index 0c3d90a..69a8435 100644
 --- a/src/libcharon/plugins/eap_ttls/eap_ttls_peer.h
 +++ b/src/libcharon/plugins/eap_ttls/eap_ttls_peer.h
-@@ -26,6 +26,7 @@ typedef struct eap_ttls_peer_t eap_ttls_peer_t;
- 
- #include "tls_application.h"
- 
-+#include <credentials/auth_cfg.h>
- #include <library.h>
- 
- /**
-@@ -37,6 +38,13 @@ struct eap_ttls_peer_t {
+@@ -37,6 +37,13 @@ struct eap_ttls_peer_t {
  	 * Implements the TLS application data handler.
  	 */
  	tls_application_t application;
@@ -550,7 +566,7 @@ index 0c3d90a4..17ba85e4 100644
  
  /**
 diff --git a/src/libcharon/plugins/eap_ttls/eap_ttls_server.c b/src/libcharon/plugins/eap_ttls/eap_ttls_server.c
-index fc97f811..e1de1bf6 100644
+index fc97f81..e1de1bf 100644
 --- a/src/libcharon/plugins/eap_ttls/eap_ttls_server.c
 +++ b/src/libcharon/plugins/eap_ttls/eap_ttls_server.c
 @@ -60,6 +60,11 @@ struct private_eap_ttls_server_t {
@@ -668,18 +684,10 @@ index fc97f811..e1de1bf6 100644
  	);
  
 diff --git a/src/libcharon/plugins/eap_ttls/eap_ttls_server.h b/src/libcharon/plugins/eap_ttls/eap_ttls_server.h
-index 1e13f55c..c2a3be7c 100644
+index 1e13f55..3348706 100644
 --- a/src/libcharon/plugins/eap_ttls/eap_ttls_server.h
 +++ b/src/libcharon/plugins/eap_ttls/eap_ttls_server.h
-@@ -26,6 +26,7 @@ typedef struct eap_ttls_server_t eap_ttls_server_t;
- 
- #include "tls_application.h"
- 
-+#include <credentials/auth_cfg.h>
- #include <library.h>
- 
- /**
-@@ -37,6 +38,13 @@ struct eap_ttls_server_t {
+@@ -37,6 +37,13 @@ struct eap_ttls_server_t {
  	 * Implements the TLS application data handler.
  	 */
  	tls_application_t application;
