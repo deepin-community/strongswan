@@ -1,29 +1,25 @@
-strongswan (6.0.1-6+deb13u6deepin2) unstable; urgency=medium
+strongswan (6.0.1-6+deb13u7) trixie-security; urgency=medium
 
-  * Rebuild with LTO enabled (dpkg vendor feature optimize/lto).
+  * d/patches: add fix for undefined memory access when verifying PKCS#7
+    containers (CVE-2026-78123)
+  * d/patches: add patch to fix memory leaks after enumerating certificates in
+    PKCS#7 containers (CVE-2026-78124)
+  * d/patches: fix NULL-pointer dereference in EAP-AKA (CVE-2026-78126)
+  * d/patches: avoid memory leak in IKE message logging (CVE-2026-78127)
+  * d/patches: fix potential DoS by validating PKCS#5 parsed parameters
+    (CVE-2026-78129)
+  * d/patches: fix NULL-pointer dereference in x509 code (CVE-2026-78130)
+  * d/patches: fix memory leak when parsing x509 attribute certificates
+    (CVE-2026-78131)
+  * d/patches: fix infinite loop when parsing x509 attribute certificates
+    (CVE-2026-78132)
+  * d/patches: fix use-after-free in IKEv2 rekeying (CVE-2026-78133)
+  * d/patches: fix several issues with binding identities to the IKE SA
+    (CVE-2026-78134)
+  * d/patches: properly reject CREATE_CHILD_SA requests on unestablished
+    IKE_SA (CVE-2026-78135)
 
- -- tunaichao <tunaichao@uniontech.com>  Mon, 21 Sep 2026 16:37:51 +0800
-
-strongswan (6.0.1-6+deb13u6deepin1) unstable; urgency=medium
-
-  * fix(cve): CVE-2026-78135 - ikev2: Properly reject CREATE_CHILD_SA requests
-    on unestablished IKE_SAs   Upstream:
-    https://download.strongswan.org/security/CVE-2026-78135/strongswan-
-    5.9.7-6.0.7_early_create_child_sa.patch
-  * fix(cve): CVE-2026-78124 - openssl: Fix memory leaks after enumerating
-    certificates in PKCS#7 container   Upstream:
-    https://download.strongswan.org/security/CVE-2026-78124/strongswan-
-    5.0.2-6.0.7_openssl_pkcs7_certs_leak.patch
-  * fix(cve): CVE-2026-78123 - openssl: Fix undefined memory access when
-    verifying PKCS#7 containers   Upstream:
-    https://download.strongswan.org/security/CVE-2026-78123/strongswan-
-    5.0.2-6.0.7_openssl_pkcs7_info_init.patch
-  * fix(cve): CVE-2026-78134 - eap-ttls/peap: Return auth-cfg with details on
-    TLS and inner EAP method   Upstream:
-    https://download.strongswan.org/security/CVE-2026-78134/strongswan-
-    5.5.1-5.9.9_eap_inner_auth_cfg.patch
-
- -- deepin-ci-robot <packages@deepin.org>  Sun, 20 Sep 2026 19:26:56 +0800
+ -- Yves-Alexis Perez <corsac@debian.org>  Tue, 01 Sep 2026 13:29:28 +0200
 
 strongswan (6.0.1-6+deb13u6) trixie-security; urgency=medium
 

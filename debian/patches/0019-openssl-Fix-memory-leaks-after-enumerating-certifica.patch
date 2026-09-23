@@ -1,11 +1,18 @@
-Description: CVE-2026-78124 (unknown) - 内存泄漏漏洞：在枚举 PKCS#7 容器中的证书后未释放内存
-Author: Tobias Brunner <tobias@strongswan.org>
-Origin: https://download.strongswan.org/security/CVE-2026-78124/strongswan-5.0.2-6.0.7_openssl_pkcs7_certs_leak.patch
-Bug: https://nvd.nist.gov/vuln/detail/CVE-2026-78124
-Last-Update: 2026-09-11
+From: Tobias Brunner <tobias@strongswan.org>
+Date: Mon, 15 Jun 2026 16:02:01 +0200
+Subject: openssl: Fix memory leaks after enumerating certificates in PKCS#7
+ container
+
+This can be triggered via IKEv1.
+
+Fixes: 04884be3b5f7 ("Implement openssl PKCS#7 certficiate enumeration")
+Fixes: CVE-2026-78124
 ---
+ src/libstrongswan/plugins/openssl/openssl_pkcs7.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
 diff --git a/src/libstrongswan/plugins/openssl/openssl_pkcs7.c b/src/libstrongswan/plugins/openssl/openssl_pkcs7.c
-index d9abcf8c..e35e2461 100644
+index b15c8d7..cefe1ae 100644
 --- a/src/libstrongswan/plugins/openssl/openssl_pkcs7.c
 +++ b/src/libstrongswan/plugins/openssl/openssl_pkcs7.c
 @@ -132,6 +132,10 @@ typedef struct {
